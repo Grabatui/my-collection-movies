@@ -1,0 +1,4 @@
+flask
+flask-restful
+dependency-injector
+kinopoisk-api-unofficial-client
