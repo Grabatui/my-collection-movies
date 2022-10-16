@@ -5,6 +5,9 @@ from flask_restful import Api
 
 from app.core.domain.search.provider import Provider
 from app.core.useCase.search import SearchUseCase
+from app.core.persistence.repository import Database, CacheMoviesRepository
+from app.core.persistence.action.search import SaveSearchInCache
+from app.core.persistence.model.search import CacheMovieModel
 
 
 class Container(containers.DeclarativeContainer):
@@ -14,12 +17,31 @@ class Container(containers.DeclarativeContainer):
     configuration = providers.Configuration()
 
 
+    database = providers.Factory(
+        Database,
+        database_string=configuration.database_string
+    )
+    cacheMoviesRepository = providers.Factory(
+        CacheMoviesRepository,
+        database=database
+    )
+
+
+    searchCacheMoviesModel = providers.Singleton(CacheMovieModel)
+
+
     searchProvider = providers.Factory(
         Provider,
         kinopoisk_token=configuration.kinopoisk_token
     )
+    searchSaveSearchInCache = providers.Factory(
+        SaveSearchInCache,
+        cacheMoviesRepository=cacheMoviesRepository,
+        cacheMoviesModel=searchCacheMoviesModel
+    )
 
     searchUseCase = providers.Factory(
         SearchUseCase,
-        provider=searchProvider
+        provider=searchProvider,
+        saveSearchInCache=searchSaveSearchInCache
     )

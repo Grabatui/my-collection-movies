@@ -9,6 +9,14 @@ services:
     restart: always
     environment:
       - APP_NAME=movies
+      
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_DATABASE_TEST=${DB_DATABASE_TEST}
+
+      - KINOPOISK_TOKEN=${KINOPOISK_TOKEN}
   postgres:
     build:
       context: ./.docker/postgres/development

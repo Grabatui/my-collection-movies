@@ -1,7 +1,0 @@
-LANGUAGE_EN = 'en'
-LANGUAGE_RU = 'ru'
-
-LANGUAGES = [
-    LANGUAGE_EN,
-    LANGUAGE_RU
-]

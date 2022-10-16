@@ -1,4 +1,3 @@
-from typing import List
 from flask_restful import Resource, marshal_with, reqparse, fields
 from dependency_injector.wiring import Provide, inject
 

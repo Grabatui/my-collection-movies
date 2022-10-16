@@ -3,8 +3,7 @@ from kinopoisk_unofficial.kinopoisk_api_client import KinopoiskApiClient
 from kinopoisk_unofficial.request.films.search_by_keyword_request import SearchByKeywordRequest
 from kinopoisk_unofficial.model.dictonary.found_film import FoundFilm
 
-from app.core.domain.search.entity import SearchMovie, MovieTitle, SearchFilter
-from app.core.domain.search import enum
+from app.core.domain.search.entity import LanguageEnum, ResponseMovie, MovieTitle, SearchFilter, SupplierEnum
 from . import SupplierInterface
 
 
@@ -12,7 +11,7 @@ class KinopoiskSupplier(SupplierInterface):
     def __init__(self, token: str) -> None:
         self.token = token
 
-    def get(self, filter: SearchFilter) -> List[SearchMovie]:
+    def get(self, filter: SearchFilter) -> List[ResponseMovie]:
         query = self.__make_query(filter)
 
         if not query:
@@ -41,12 +40,13 @@ class KinopoiskSupplier(SupplierInterface):
 
         return response.films
 
-    def __process_movie(self, raw_movie: FoundFilm) -> SearchMovie:
-        return SearchMovie(
+    def __process_movie(self, raw_movie: FoundFilm) -> ResponseMovie:
+        return ResponseMovie(
             id=raw_movie.film_id,
+            supplier=SupplierEnum.kinopoisk,
             titles=[
-                MovieTitle(enum.LANGUAGE_EN, raw_movie.name_en),
-                MovieTitle(enum.LANGUAGE_RU, raw_movie.name_ru)
+                MovieTitle(LanguageEnum.en, raw_movie.name_en),
+                MovieTitle(LanguageEnum.ru, raw_movie.name_ru)
             ],
             year=int(raw_movie.year) if raw_movie.year is not None else None,
             rating=float(raw_movie.rating) if raw_movie.rating is not None and raw_movie.rating != 'null' else 0.0
