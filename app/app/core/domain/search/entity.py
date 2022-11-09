@@ -6,11 +6,17 @@ from enum import Enum
 class SearchFilter():
     def __init__(
         self,
-        title: str=None,
-        year: int=None
+        title: str = None,
+        year: int = None
     ) -> None:
         self.title = title
         self.year = year
+
+    def toDictionary(self) -> dict:
+        return {
+            'title': self.title,
+            'year': self.year,
+        }
 
 
 class LanguageEnum(Enum):

@@ -5,7 +5,7 @@ services:
     build:
       context: ./.docker/python/development
       dockerfile: Dockerfile
-    container_name: flask
+    container_name: flask-movies
     restart: always
     environment:
       - APP_NAME=movies
@@ -16,7 +16,13 @@ services:
       - DB_DATABASE=${DB_DATABASE}
       - DB_DATABASE_TEST=${DB_DATABASE_TEST}
 
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_TOKEN=${AUTH_TOKEN}
+
       - KINOPOISK_TOKEN=${KINOPOISK_TOKEN}
+    networks:
+      - movies-net
+      - database
   postgres:
     build:
       context: ./.docker/postgres/development
@@ -30,6 +36,13 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
     ports:
       - "15432:5432"
+    networks:
+      - database
 
 volumes:
   postgres-data:
+
+networks:
+  movies-net:
+    driver: bridge
+  database:

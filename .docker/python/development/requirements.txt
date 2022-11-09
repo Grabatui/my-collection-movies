@@ -1,7 +1,10 @@
 flask
-flask-restful
+flask-restx
 dependency-injector
 kinopoisk-api-unofficial-client
 sqlalchemy
 alembic
 pg8000
+wtforms
+requests
+python-json-logger
