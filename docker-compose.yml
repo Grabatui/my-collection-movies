@@ -17,12 +17,12 @@ services:
       - DB_DATABASE_TEST=${DB_DATABASE_TEST}
 
       - AUTH_URL=${AUTH_URL}
-      - AUTH_TOKEN=${AUTH_TOKEN}
 
       - KINOPOISK_TOKEN=${KINOPOISK_TOKEN}
     networks:
-      - movies-net
-      - database
+      movies-net:
+        ipv4_address: 172.27.0.3
+      database:
   postgres:
     build:
       context: ./.docker/postgres/development
@@ -45,4 +45,8 @@ volumes:
 networks:
   movies-net:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.27.0.0/16
   database:
