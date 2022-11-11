@@ -5,7 +5,6 @@ from flask_restx import Resource, fields
 from flask_restx.fields import Raw
 from dependency_injector.wiring import Provide, inject
 import functools
-from werkzeug.wrappers import Response
 
 from app.core.domain.common import LoggerProvider
 from app.core.useCase.common import ValidateAccessTokenUseCase
@@ -43,11 +42,17 @@ class AbstractResource(Resource):
     def dispatch_request(self, *args, **kwargs):
         methodFullName = self.__class__.__name__ + '.' + request.method.lower()
 
+        data = None
+        try:
+            data = request.get_json()
+        except Exception:
+            pass
+
         self.__loggerProvider.get(methodFullName).addInfo(
             message='Internal Request ' + methodFullName,
             data={
                 'query': request.query_string,
-                'data': request.get_json(),
+                'data': data,
             }
         )
 
