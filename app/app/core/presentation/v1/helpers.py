@@ -5,8 +5,9 @@ from flask_restx import Resource, fields
 from flask_restx.fields import Raw
 from dependency_injector.wiring import Provide, inject
 import functools
+from werkzeug.wrappers import Response
 
-from app.main import app
+from app.core.domain.common import LoggerProvider
 from app.core.useCase.common import ValidateAccessTokenUseCase
 from app.core.di.container import Container
 
@@ -28,6 +29,45 @@ class ResultField(Raw):
 
 
 class AbstractResource(Resource):
+    def __init__(
+        self,
+        api=None,
+        loggerProvider: LoggerProvider = Provide[Container.loggerProvider],
+        *args,
+        **kwargs
+    ):
+        self.__loggerProvider = loggerProvider
+
+        super().__init__(api, *args, **kwargs)
+
+    def dispatch_request(self, *args, **kwargs):
+        methodFullName = self.__class__.__name__ + '.' + request.method.lower()
+
+        self.__loggerProvider.get(methodFullName).addInfo(
+            message='Internal Request ' + methodFullName,
+            data={
+                'query': request.query_string,
+                'data': request.get_json(),
+            }
+        )
+
+        try:
+            response = super().dispatch_request(*args, **kwargs)
+        except Exception as exception:
+            self.__loggerProvider.get(methodFullName).addInfo(
+                message='Internal Exception ' + methodFullName,
+                data={'error': str(exception)}
+            )
+
+            raise exception
+
+        self.__loggerProvider.get(methodFullName).addInfo(
+            message='Internal Response ' + methodFullName,
+            data={'data': response}
+        )
+
+        return response
+    
     def _send_error(
         self,
         message: str,
@@ -86,5 +126,3 @@ def jwt_required(function):
         return function(self, *args, **kwargs)
 
     return wrapper
-        
-

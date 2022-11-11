@@ -1,7 +1,13 @@
 import logging
 import os
-from logging.handlers import TimedRotatingFileHandler
+import datetime
+import time
+from logging import FileHandler
 from pythonjsonlogger import jsonlogger
+from flask_log_request_id import current_request_id
+
+
+startTime = time.strftime('%H.%M.%S')
 
 
 class Logger():
@@ -20,13 +26,25 @@ class Logger():
         logger = logging.getLogger(self.__name)
         logger.level = logging.DEBUG
 
-        logFullPath = os.path.join(self.__rootPath, 'logs', 'log.log')
-        logHandler = TimedRotatingFileHandler(logFullPath, when='midnight')
+        logFullPath = self.__getDateTimeLogPath()
+        logHandler = FileHandler(logFullPath)
         
-        logFormatter = jsonlogger.JsonFormatter()
+        logFormatter = jsonlogger.JsonFormatter(timestamp=True)
         
         logHandler.setFormatter(logFormatter)
         
         logger.addHandler(logHandler)
 
         return logger
+
+    def __getDateTimeLogPath(self) -> str:
+        path = os.path.join(
+            self.__rootPath,
+            'logs',
+            datetime.datetime.now().strftime('%Y-%m-%d')
+        )
+
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+        return os.path.join(path, '{}.{}.log'.format(startTime, current_request_id()))

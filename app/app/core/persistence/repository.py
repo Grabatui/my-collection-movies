@@ -53,14 +53,16 @@ class AbstractExternalRepository():
         headers: dict,
         logger: Optional[Logger]
     ) -> ExternalResponse:
+        fullEndpoint = self.__makeEndpoint(endpoint)
+
         if logger:
-            logger.addInfo(message='Request', data={'method': method, 'endpoint': endpoint, 'data': data, 'headers': headers})
+            logger.addInfo(message='External Request', data={'method': method, 'endpoint': fullEndpoint, 'data': data, 'headers': headers})
 
         method = method.upper()
 
         request = requests.Request(
             method=method,
-            url=self.__makeEndpoint(endpoint),
+            url=fullEndpoint,
             json=data if method != 'GET' else None,
             params=data if method == 'GET' else None,
             headers=headers
@@ -72,14 +74,27 @@ class AbstractExternalRepository():
             response = session.send(request.prepare(), verify=False)
         except Exception as exception:
             if logger:
-                logger.addError(message='EXCEPTION', data={'error': str(exception)})
+                logger.addError(message='External EXCEPTION', data={'error': str(exception)})
 
             raise exception
 
-        if logger:
-            logger.addInfo(message='Response', data={'status': response.status_code, 'data': response.content})
+        jsonException = None
+        try:
+            responseData = response.json()
+        except Exception as exception:
+            jsonException = exception
 
-        responseData = response.json()
+        if logger:
+            logger.addInfo(
+                message='External Response',
+                data={
+                    'status': response.status_code,
+                    'data': response.json() if not jsonException else response.content
+                }
+            )
+
+        if jsonException:
+            raise jsonException
 
         return ExternalResponse(responseData, response.status_code)
 

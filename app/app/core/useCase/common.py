@@ -1,18 +1,17 @@
-from app.core.domain.common import IsAccessTokenValidInterface
-from app.core.domain.entity import Logger
+from app.core.domain.common import IsAccessTokenValidInterface, LoggerProvider
 
 
 class ValidateAccessTokenUseCase():
     def __init__(
         self,
         isAccessTokenValid: IsAccessTokenValidInterface,
-        logRootPath: str
+        loggerProvider: LoggerProvider
     ) -> None:
         self.isAccessTokenValid = isAccessTokenValid
-        self.logRootPath = logRootPath
+        self.loggerProvider = loggerProvider
 
     def run(self, accessToken: str) -> None:
-        logger = Logger(self.__class__.__name__, self.logRootPath)
+        logger = self.loggerProvider.get(self.__class__.__name__)
 
         if not self.isAccessTokenValid.run(accessToken, logger):
             raise Exception('Access token is invalid')

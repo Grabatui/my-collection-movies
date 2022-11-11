@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 from flask import Flask
 from flask_restx import Api
 
+from app.core.domain.common import LoggerProvider
 from app.core.domain.search.provider import Provider
 from app.core.useCase.common import ValidateAccessTokenUseCase
 from app.core.useCase.search import SearchUseCase
@@ -18,19 +19,19 @@ class Container(containers.DeclarativeContainer):
     configuration = providers.Configuration()
 
 
-    database = providers.Factory(
+    database = providers.Singleton(
         Database,
         database_string=configuration.database_string
     )
-    searchHistoryRepository = providers.Factory(
+    searchHistoryRepository = providers.Singleton(
         SearchHistoryRepository,
         database=database
     )
-    cacheMoviesRepository = providers.Factory(
+    cacheMoviesRepository = providers.Singleton(
         CacheMoviesRepository,
         database=database
     )
-    authExternalRepository = providers.Factory(
+    authExternalRepository = providers.Singleton(
         AuthExternalRepository,
         endpointPrefix=configuration.auth_url
     )
@@ -40,33 +41,39 @@ class Container(containers.DeclarativeContainer):
     searchHistoryModel = providers.Singleton(SearchHistoryModel)
 
 
-    searchProvider = providers.Factory(
+    searchProvider = providers.Singleton(
         Provider,
         kinopoisk_token=configuration.kinopoisk_token
     )
-    saveSearchHistory = providers.Factory(
+    loggerProvider = providers.Singleton(
+        LoggerProvider,
+        logRootPath=configuration.root_path
+    )
+
+
+    saveSearchHistory = providers.Singleton(
         SaveSearchHistoryAction,
         searchHistoryRepository=searchHistoryRepository,
         searchHistoryModel=searchHistoryModel
     )
-    searchSaveSearchInCache = providers.Factory(
+    searchSaveSearchInCache = providers.Singleton(
         SaveSearchInCacheAction,
         cacheMoviesRepository=cacheMoviesRepository,
         searchMoviesModel=searchSearchMoviesModel
     )
-    isAccessTokenValidAction = providers.Factory(
+    isAccessTokenValidAction = providers.Singleton(
         IsAccessTokenValidAction,
         repository=authExternalRepository
     )
 
-    searchUseCase = providers.Factory(
+    searchUseCase = providers.Singleton(
         SearchUseCase,
         provider=searchProvider,
         saveSearchHistory=saveSearchHistory,
         saveSearchInCache=searchSaveSearchInCache
     )
-    validateAccessToken = providers.Factory(
+    validateAccessToken = providers.Singleton(
         ValidateAccessTokenUseCase,
         isAccessTokenValid=isAccessTokenValidAction,
-        logRootPath=configuration.root_path
+        loggerProvider=loggerProvider
     )

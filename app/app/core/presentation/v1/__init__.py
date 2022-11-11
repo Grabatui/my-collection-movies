@@ -1,3 +1,5 @@
+from flask_log_request_id import RequestID
+
 from app.main import app
 from .helpers import AuthorizationTokenIsInvalid, ResultEnum
 
@@ -15,6 +17,8 @@ api.add_resource(search.Search, '/search')
 
 api.init_app(app)
 
+RequestID(app)
+
 
 @api.errorhandler(AuthorizationTokenIsInvalid)
 def handle_token_is_invalid(exception):
@@ -22,3 +26,5 @@ def handle_token_is_invalid(exception):
         'status': ResultEnum.error.value,
         'data': {'error': str(exception)}
     }, 401
+
+
